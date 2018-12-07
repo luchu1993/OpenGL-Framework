@@ -31,6 +31,8 @@ bool CubeMesh::init()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexCount * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
     glBindVertexArray(0);
+
+	return true;
 }
 
 bool CubeMesh::render()
@@ -39,4 +41,6 @@ bool CubeMesh::render()
     glBindVertexArray(m_vertexArrayObject);
     glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+
+	return true;
 }

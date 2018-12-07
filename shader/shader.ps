@@ -1,4 +1,4 @@
-#version 410 core
+#version 450 core
 
 in vec3 posW;
 in vec3 normalW;
@@ -7,5 +7,5 @@ out vec4 fragColor;
 
 void main()
 {
-    fragColor = ( normalW / 2.0f ) + 0.5f;
+    fragColor = vec4(normalW/2.0f+0.5f, 1.0f);
 }

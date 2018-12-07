@@ -3,10 +3,10 @@
 Application* gApplication = nullptr;
 
 Application::Application(const char* appName, int width, int height)
-: m_appName(appName)
-, m_screenWidth(width)
-, m_screenHeight(height)
-, m_isRunning(false)
+	: m_appName(appName)
+	, m_screenWidth(width)
+	, m_screenHeight(height)
+	, m_isRunning(false)
 {
     gApplication = this;
 }
@@ -38,9 +38,11 @@ bool Application::initWindow()
     glfwInit();
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
     
     m_window = glfwCreateWindow(m_screenWidth, m_screenHeight, m_appName, nullptr, nullptr);
     if (m_window == nullptr)

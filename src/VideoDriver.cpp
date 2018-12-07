@@ -3,11 +3,14 @@
 #include <iostream>
 #include <functional>
 
-static VideoDriver* gActiveDriver = nullptr;
+namespace
+{
+	VideoDriver* activeDriver = nullptr;
+}
 
 static void onFramebufferResize(GLFWwindow* window, int width, int height)
 {
-    gActiveDriver->resize(width, height);
+    activeDriver->resize(width, height);
 }
 
 VideoDriver::VideoDriver(GLFWwindow* window, int width, int height)
@@ -15,7 +18,7 @@ VideoDriver::VideoDriver(GLFWwindow* window, int width, int height)
     , m_screenWidth(width)
     , m_screenHeight(height)
 {
-    gActiveDriver = this;
+    activeDriver = this;
 }
 
 bool VideoDriver::initDeviceContext()
@@ -27,12 +30,11 @@ bool VideoDriver::initDeviceContext()
             ": line " << __LINE__ << std::endl;
         return false;
     }
-    std::cout << "[INFO]: Init Device Context successed."  << std::endl;
 
-    // output GL Version
-    const unsigned char* glVersion = glGetString(GL_VERSION);
-    std::cout << "[INFO]: Current GL Version: " << glVersion << std::endl; 
-
+	// output GL Version
+	const unsigned char* glVersion = glGetString(GL_VERSION);
+    std::cout << "[INFO]: Init Device Context successed, GL Version: " << glVersion << std::endl;
+    
     // depth stencil test
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -66,6 +68,8 @@ bool VideoDriver::init()
     }
     std::cout << "[INFO]: Init Shader Program successed."  << std::endl;
 
+	// create cube mesh
+
     return true;
 }
 
@@ -81,7 +85,7 @@ bool VideoDriver::render(float dt)
 
 void VideoDriver::begin()
 {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0);
     glClearStencil(0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -100,6 +104,7 @@ void VideoDriver::cleanup()
 bool VideoDriver::resize(int width, int height)
 {
     glViewport(0, 0, width, height);
+	return true;
 }
 
 bool VideoDriver::renderScene(float dt)

@@ -1,8 +1,10 @@
 #include "Shader.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 Shader::Shader(const char* vertexShaderFile, const char* fragmentShaderFile)
-    : m_vertexShaderFile(m_vertexShaderFile)
+    : m_vertexShaderFile(vertexShaderFile)
     , m_fragmentShaderFile(fragmentShaderFile)
 {
 
@@ -15,7 +17,13 @@ bool Shader::init()
 
     // Create and compile Vertext Shader 
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    std::string vertexShaderCode = readShaderFromFile(m_vertexShaderFile);
+	std::string vertexShaderCode;
+	if (!readShaderFromFile(m_vertexShaderFile, vertexShaderCode))
+	{
+		std::cerr << "[ERROR]: Cannot open vertext shader file: "
+			<< m_vertexShaderFile << " at " << __FILE__ << ": line " << __LINE__ <<std::endl;
+		return false;
+	}
     const char* vertexShaderCodes[] = { vertexShaderCode.c_str() };
     glShaderSource(vertexShader, 1, vertexShaderCodes, nullptr);
     glCompileShader(vertexShader);
@@ -24,20 +32,28 @@ bool Shader::init()
     {
         glGetShaderInfoLog(vertexShader, 512, nullptr, errMsg);
         std::cerr << "[ERROR]: Compile Vertex Shader failed at " 
-            << __FILE__ << ": line " << __LINE__ << ". " << errMsg << std::endl;
+            << __FILE__ << ": line " << __LINE__ << "\n" << errMsg << std::endl;
         return false;
     }
 
     // Create and compile Fragment shader
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::string fragmentShaderCode = readShaderFromFile(m_fragmentShaderFile);
+	std::string fragmentShaderCode;
+	if (!readShaderFromFile(m_fragmentShaderFile, fragmentShaderCode))
+	{
+		std::cerr << "[ERROR]: Cannot open fragment shader file: " 
+			<< m_fragmentShaderFile << " at " << __FILE__ << ": line " << __LINE__ << std::endl;
+		return false;
+	}
     const char* fragmentShaderCodes[] = { fragmentShaderCode.c_str() };
     glShaderSource(fragmentShader, 1, fragmentShaderCodes, nullptr);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, errMsg);
         std::cerr << "[ERROR]: Compile Fragment Shader failed at " 
-            << __FILE__ << ": line " << __LINE__ << ". " << errMsg << std::endl;
+            << __FILE__ << ": line " << __LINE__ << "\n" << errMsg << std::endl;
         return false;
     }
 
@@ -52,7 +68,7 @@ bool Shader::init()
     {
         glGetProgramInfoLog(m_shaderProgram, 512, nullptr, errMsg);
         std::cerr << "[ERROR]: Create Shader Program failed at " 
-            << __FILE__ << ": line " << __LINE__ << ". " << errMsg << std::endl;
+            << __FILE__ << ": line " << __LINE__ << "\n" << errMsg << std::endl;
         return false;
     }
 
@@ -62,21 +78,15 @@ bool Shader::init()
     return true;
 }
 
-bool Shader::render()
+bool Shader::readShaderFromFile(const char* fileName, std::string& shaderCode)
 {
-    // Bind Shader Program
-    glUseProgram(m_shaderProgram);
-    // update uniform data
-    
-    return true;
-}
+	std::ifstream shaderFile(fileName);
+	if (!shaderFile.is_open())
+		return false;
 
-void Shader::cleanup()
-{
-    
-}
+	std::stringstream vertShaderStream;
+	vertShaderStream << shaderFile.rdbuf();
+	shaderCode = vertShaderStream.str();
 
-std::string Shader::readShaderFromFile(const char* fileName)
-{
-
+	return true;
 }

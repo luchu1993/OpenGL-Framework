@@ -14,7 +14,7 @@ public:
     void cleanup();
 
 protected:
-    std::string readShaderFromFile(const char* fileName);
+    bool readShaderFromFile(const char* fileName, std::string& shaderCode);
 
 private:
     unsigned int m_shaderProgram;
