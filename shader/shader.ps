@@ -5,6 +5,11 @@ in vec3 normalW;
 
 out vec4 fragColor;
 
+uniform CameraInfo
+{
+    vec3 cameraPos;
+};
+
 void main()
 {
     fragColor = vec4(normalW/2.0f+0.5f, 1.0f);

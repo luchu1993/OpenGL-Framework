@@ -75,6 +75,11 @@ bool Shader::init()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+	// 
+	m_transformUBOIndex = glGetUniformBlockIndex(m_shaderProgram, "Transforms");
+	glGenBuffers(1, &m_transformUBO);
+	glBindBufferBase(GL_UNIFORM_BUFFER, m_transformUBOIndex, m_transformUBO);
+
     return true;
 }
 
@@ -89,4 +94,33 @@ bool Shader::readShaderFromFile(const char* fileName, std::string& shaderCode)
 	shaderCode = vertShaderStream.str();
 
 	return true;
+}
+
+
+bool Shader::render
+(
+	glm::mat4 const& world,
+	glm::mat4 const& view,
+	glm::mat4 const& projection
+)
+{
+	TransformsUniformBlock block;
+	block.world = world;
+	block.view = view;
+	block.projection = projection;
+	block.worldInvTranspose = glm::transpose(glm::inverse(world));
+
+	int uboSize = 0;
+	glGetActiveUniformBlockiv(m_shaderProgram, m_transformUBOIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+	glBindBuffer(GL_UNIFORM_BUFFER, m_transformUBO);
+	glBufferData(GL_UNIFORM_BUFFER, uboSize, &block, GL_STATIC_DRAW);
+
+	glUseProgram(m_shaderProgram);
+	return true;
+}
+
+void Shader::cleanup()
+{
+	glDeleteBuffers(1, &m_transformUBO);
+	glDeleteProgram(m_shaderProgram);
 }

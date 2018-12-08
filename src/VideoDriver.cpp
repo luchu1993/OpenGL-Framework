@@ -33,11 +33,13 @@ bool VideoDriver::initDeviceContext()
 
 	// output GL Version
 	const unsigned char* glVersion = glGetString(GL_VERSION);
-    std::cout << "[INFO]: Init Device Context successed, GL Version: " << glVersion << std::endl;
+    std::cout << "[INFO]: OpenGL Version: " << glVersion << std::endl;
     
     // depth stencil test
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
+    // glEnable(GL_STENCIL_TEST);
+
+	glViewport(0, 0, m_screenWidth, m_screenHeight);
 
     glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
     
@@ -57,6 +59,7 @@ bool VideoDriver::init()
             ": line " << __LINE__ << std::endl;
         return false;
     }
+	std::cout << "[INFO]: Init Device Context successed." << std::endl;
 
     // compile and bind shaders
     m_shader.reset(new Shader("../shader/shader.vs", "../shader/shader.ps"));
@@ -68,7 +71,26 @@ bool VideoDriver::init()
     }
     std::cout << "[INFO]: Init Shader Program successed."  << std::endl;
 
+	// create camera
+	float aspect = static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight);
+	m_camera.reset(new Camera(m_shader->getProgram(), 45.0f, aspect, 0.1f, 100.0f));
+	if (!m_camera->init())
+	{
+		std::cerr << "[ERROR]: Create Camera failed at " << __FILE__ <<
+			": line " << __LINE__ << std::endl;
+		return false;
+	}
+	std::cout << "[INFO]: Init Camera successed." << std::endl;
+
 	// create cube mesh
+	m_model.reset(new CubeModel());
+	if (!m_model->init())
+	{
+		std::cerr << "[ERROR]: Init CubeModel failed at " << __FILE__ <<
+			": line " << __LINE__ << std::endl;
+		return false;
+	}
+	std::cout << "[INFO]: Init CudeModel successed." << std::endl;
 
     return true;
 }
@@ -87,8 +109,8 @@ void VideoDriver::begin()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0);
-    glClearStencil(0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    // glClearStencil(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void VideoDriver::end()
@@ -98,7 +120,9 @@ void VideoDriver::end()
 
 void VideoDriver::cleanup()
 {
-
+	m_shader->cleanup();
+	m_camera->cleanup();
+	m_model->cleanup();
 }
 
 bool VideoDriver::resize(int width, int height)
@@ -109,6 +133,22 @@ bool VideoDriver::resize(int width, int height)
 
 bool VideoDriver::renderScene(float dt)
 {
+	// setup camera
+	m_camera->setPosition(0.0f, 0.0f, 10.0f);
+	m_camera->render();
+	
+	// setup model
+	m_model->setPosition(0.0f, 0.0f, 0.0f);
+	m_model->setRotation(45.0f, 45.0f, 45.0f);
+	
+	m_shader->render
+	(
+		m_model->getWorldMatrix(),
+		m_camera->getViewMatrix(),
+		m_camera->getProjectionMatrix()
+	);
+	m_model->render();
+
     return true;
 }
 

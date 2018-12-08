@@ -7,10 +7,10 @@ out vec3 normalW;
 
 uniform Transforms
 {
-    uniform mat4 world;
-    uniform mat4 view;
-    uniform mat4 projection;
-    uniform mat4 worldInvTranspose;  // 法向量变换
+    mat4 world;
+    mat4 view;
+    mat4 projection;
+    mat4 worldInvTranspose;  // 法向量变换
 };
 
 void main()
