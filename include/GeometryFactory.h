@@ -14,9 +14,9 @@ public:
     };
 
     static MeshData CreateBox(float width = 2.0f, float height = 2.0f, float depth = 2.0f);
-    static MeshData CreateSphere(float radius = 1.0f, int levels = 50, int slices = 50);
-    static MeshData CreateCylinder(float radius = 1.0f, float height = 2.0f, int slices = 50);
-    static MeshData CreateCylinderNoCap(float radius = 1.0f, float height = 2.0f, int slices = 50);
+    static MeshData CreateSphere(float radius = 1.0f, unsigned int levels = 50, unsigned int slices = 50);
+    static MeshData CreateCylinder(float radius = 1.0f, float height = 2.0f, unsigned int slices = 50);
+    static MeshData CreateCylinderNoCap(float radius = 1.0f, float height = 2.0f, unsigned int slices = 50);
     
 private:
     GeometryFactory() = delete;

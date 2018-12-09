@@ -7,10 +7,6 @@
 
 class Camera 
 {
-	struct CameraInfo
-	{
-		glm::vec3 cameraPos;
-	};
 public:
 	Camera(unsigned int shaderProgram, float fov, float aspect, float scn_near, float scn_far);
 	
@@ -22,7 +18,7 @@ public:
 	void setPosition(float x, float y, float z);
 	void setRotation(float x, float y, float z);
 
-	glm::mat4 getProjectionMatrix() const { return m_projMatrix; }
+	glm::mat4 getProjMatrix() const { return m_projMatrix; }
 	glm::mat4 getViewMatrix() const { return m_viewMatrix; }
 
 private:
@@ -34,10 +30,6 @@ private:
 
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
-
-	unsigned int m_cameraInfoUBO;
-	unsigned int m_cameraInfoUBOIndex;
-	int m_cameraInfoUBOSize;
 
 	glm::mat4 m_projMatrix;
 	glm::mat4 m_viewMatrix;

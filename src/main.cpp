@@ -6,9 +6,6 @@ int main(void)
     
     if (app.init())
         return app.run();
-    else
-    {
-        std::cerr << "[ERROR]: Init Application failed!" << std::endl;
-        return -1;
-    }
+
+	return -1;
 }

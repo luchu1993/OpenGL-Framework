@@ -21,17 +21,20 @@ public:
 	void setRotation(float x, float y, float z);
 	void setScale(float x, float y, float z);
 
+	void resetGeometry();
+
 	glm::mat4 getWorldMatrix() const;
 
 private:
-	glm::vec3 m_position = glm::vec3(0.0f);
-	glm::vec3 m_rotation = glm::vec3(0.0f);
-	glm::vec3 m_scale = glm::vec3(1.0f);
+	glm::vec3 m_position;
+	glm::vec3 m_rotation;
+	glm::vec3 m_scale;
+
 	unsigned int m_vertextCount;
 	unsigned int m_indexCount;
 
-    unsigned int m_vertexArrayObject;
-    unsigned int m_vertBufferObject;
-    unsigned int m_indexBufferObject;
+    unsigned int m_cubeVAO;
+    unsigned int m_cubeVBO;
+    unsigned int m_cubeIBO;
 };
 #endif

@@ -24,6 +24,8 @@ VideoDriver::VideoDriver(GLFWwindow* window, int width, int height)
 bool VideoDriver::initDeviceContext()
 {
     glfwMakeContextCurrent(m_window);
+	glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "[ERROR]: Init glad loader failed at " << __FILE__ << 
@@ -34,15 +36,9 @@ bool VideoDriver::initDeviceContext()
 	// output GL Version
 	const unsigned char* glVersion = glGetString(GL_VERSION);
     std::cout << "[INFO]: OpenGL Version: " << glVersion << std::endl;
-    
-    // depth stencil test
-    glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_STENCIL_TEST);
 
-	glViewport(0, 0, m_screenWidth, m_screenHeight);
+	glEnable(GL_DEPTH_TEST);
 
-    glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
-    
     return true;
 }
 
@@ -100,16 +96,14 @@ bool VideoDriver::render(float dt)
     bool running = false;
     begin();
     running = renderScene(dt);
-    running = renderGui(dt) && running;
+    running = running && renderGui(dt);
     end();
     return running;
 }
 
 void VideoDriver::begin()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClearDepth(1.0);
-    // glClearStencil(0);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -128,26 +122,80 @@ void VideoDriver::cleanup()
 bool VideoDriver::resize(int width, int height)
 {
     glViewport(0, 0, width, height);
+	if (m_camera)
+		m_camera->resize(width, height);
 	return true;
 }
 
 bool VideoDriver::renderScene(float dt)
 {
 	// setup camera
-	m_camera->setPosition(0.0f, 0.0f, 10.0f);
+	m_camera->setPosition(0.0f, 0.0f, 15.0f);
 	m_camera->render();
 	
 	// setup model
-	m_model->setPosition(0.0f, 0.0f, 0.0f);
-	m_model->setRotation(45.0f, 45.0f, 45.0f);
-	
-	m_shader->render
-	(
-		m_model->getWorldMatrix(),
-		m_camera->getViewMatrix(),
-		m_camera->getProjectionMatrix()
-	);
-	m_model->render();
+	// cube0 (original)
+	{
+		// 创建Model
+		m_model->resetGeometry();
+		m_model->setPosition(0.0f, 3.0f, 0.0f);
+		m_model->setRotation(0.0f, 0.0f, 0.0f);
+
+		// 设置shader cbuffer参数
+		m_shader->render
+		(
+			m_model->getWorldMatrix(),
+			m_camera->getViewMatrix(),
+			m_camera->getProjMatrix()
+		);
+		// 绘制模型
+		m_model->render();
+	}
+
+	// cube1 (rotate by X axis)
+	{
+		m_model->resetGeometry();
+		m_model->setPosition(-5.0f, -3.0f, 0.0f);
+		m_model->setRotation(45.0f, 0.0f, 0.0f);
+
+		m_shader->render
+		(
+			m_model->getWorldMatrix(),
+			m_camera->getViewMatrix(),
+			m_camera->getProjMatrix()
+		);
+		m_model->render();
+	}
+
+	// cube2 (rotate by Y axis)
+	{
+		m_model->resetGeometry();
+		m_model->setPosition(0.0f, -3.0f, 0.0f);
+		m_model->setRotation(0.0f, 45.0f, 0.0f);
+
+		m_shader->render
+		(
+			m_model->getWorldMatrix(),
+			m_camera->getViewMatrix(),
+			m_camera->getProjMatrix()
+		);
+		m_model->render();
+	}
+
+	// cube3 (rotate by Z axis)
+	{
+		m_model->resetGeometry();
+		m_model->setPosition(5.0f, -3.0f, 0.0f);
+		m_model->setRotation(0.0f, 0.0f, 45.0f);
+
+		m_shader->render
+		(
+			m_model->getWorldMatrix(),
+			m_camera->getViewMatrix(),
+			m_camera->getProjMatrix()
+		);
+		m_model->render();
+	}
 
     return true;
 }

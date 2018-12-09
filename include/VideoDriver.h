@@ -29,7 +29,7 @@ private:
     GLFWwindow* m_window;
     int m_screenWidth;
     int m_screenHeight;
-    std::unique_ptr<Shader> m_shader;
+	std::unique_ptr<Shader> m_shader;
 	std::unique_ptr<Camera> m_camera;
 	std::unique_ptr<CubeModel> m_model;
 };

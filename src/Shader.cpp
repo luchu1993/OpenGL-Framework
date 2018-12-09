@@ -24,6 +24,7 @@ bool Shader::init()
 			<< m_vertexShaderFile << " at " << __FILE__ << ": line " << __LINE__ <<std::endl;
 		return false;
 	}
+
     const char* vertexShaderCodes[] = { vertexShaderCode.c_str() };
     glShaderSource(vertexShader, 1, vertexShaderCodes, nullptr);
     glCompileShader(vertexShader);
@@ -41,10 +42,11 @@ bool Shader::init()
 	std::string fragmentShaderCode;
 	if (!readShaderFromFile(m_fragmentShaderFile, fragmentShaderCode))
 	{
-		std::cerr << "[ERROR]: Cannot open fragment shader file: " 
+		std::cerr << "[ERROR]: Cannot open fragment shader file: "
 			<< m_fragmentShaderFile << " at " << __FILE__ << ": line " << __LINE__ << std::endl;
 		return false;
 	}
+
     const char* fragmentShaderCodes[] = { fragmentShaderCode.c_str() };
     glShaderSource(fragmentShader, 1, fragmentShaderCodes, nullptr);
 	glCompileShader(fragmentShader);
@@ -76,9 +78,8 @@ bool Shader::init()
     glDeleteShader(fragmentShader);
 
 	// 
-	m_transformUBOIndex = glGetUniformBlockIndex(m_shaderProgram, "Transforms");
 	glGenBuffers(1, &m_transformUBO);
-	glBindBufferBase(GL_UNIFORM_BUFFER, m_transformUBOIndex, m_transformUBO);
+	glBindBufferBase(GL_UNIFORM_BUFFER, TransformsUniformBlock::BindingPoint, m_transformUBO);
 
     return true;
 }
@@ -110,12 +111,11 @@ bool Shader::render
 	block.projection = projection;
 	block.worldInvTranspose = glm::transpose(glm::inverse(world));
 
-	int uboSize = 0;
-	glGetActiveUniformBlockiv(m_shaderProgram, m_transformUBOIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_transformUBO);
-	glBufferData(GL_UNIFORM_BUFFER, uboSize, &block, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(TransformsUniformBlock), &block, GL_STATIC_DRAW);
 
 	glUseProgram(m_shaderProgram);
+
 	return true;
 }
 

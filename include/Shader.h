@@ -16,6 +16,7 @@ class Shader
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 worldInvTranspose;
+		static const unsigned int BindingPoint = 0;
 	};
 public:
     Shader(const char* vertexShaderFile, const char* fragmentShaderFile);
@@ -37,7 +38,6 @@ private:
     const char* m_vertexShaderFile;
     const char* m_fragmentShaderFile;
 	unsigned int m_transformUBO;
-	unsigned int m_transformUBOIndex;
 };
 
 #endif

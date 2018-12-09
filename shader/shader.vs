@@ -1,10 +1,11 @@
-﻿#version 450 core
+﻿#version 420 core
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 
 out vec3 posW;
 out vec3 normalW;
 
+layout (std140, binding = 0)
 uniform Transforms
 {
     mat4 world;

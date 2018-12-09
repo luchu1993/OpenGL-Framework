@@ -1,4 +1,5 @@
 ﻿#include "GeometryFactory.h"
+#include "glm/gtc/constants.hpp"
 
 GeometryFactory::MeshData GeometryFactory::CreateBox(float width, float height, float depth)
 {
@@ -60,23 +61,166 @@ GeometryFactory::MeshData GeometryFactory::CreateBox(float width, float height, 
 	return meshData;
 }
 
-GeometryFactory::MeshData GeometryFactory::CreateSphere(float radius, int levels, int slices)
+GeometryFactory::MeshData GeometryFactory::CreateSphere(float radius, unsigned int levels, unsigned int slices)
 {
-    MeshData meshData;
+	MeshData meshData;
+	float phi = 0.0f, theta = 0.0f;
+	float per_phi = glm::pi<float>()/ levels;
+	float per_theta = glm::two_pi<float>() / slices;
+	float x, y, z;
 
-    return meshData;
+	// 放入顶端点
+	meshData.posVec.push_back(glm::vec3(0.0f, radius, 0.0f));
+	meshData.normalVec.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+
+	for (unsigned int i = 1; i < levels; ++i)
+	{
+		phi = per_phi * i;
+		// 需要slices + 1个顶点是因为 起点和终点需为同一点，但纹理坐标值不一致
+		for (unsigned int j = 0; j <= slices; ++j)
+		{
+			theta = per_theta * j;
+			x = radius * sinf(phi) * cosf(theta);
+			y = radius * cosf(phi);
+			z = radius * sinf(phi) * sinf(theta);
+			// 计算出局部坐标、法向量和纹理坐标
+			glm::vec3 pos = glm::vec3(x, y, z);
+			glm::vec3 normal = glm::normalize(pos);
+			meshData.posVec.push_back(pos);
+			meshData.normalVec.push_back(normal);
+		}
+	}
+	// 放入底端点
+	meshData.posVec.push_back(glm::vec3(0.0f, -radius, 0.0f));
+	meshData.normalVec.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+
+	// 逐渐放入索引
+	if (levels > 1)
+	{
+		for (unsigned int j = 1; j <= slices + 1; ++j)
+		{
+			meshData.indexVec.push_back(0);
+			meshData.indexVec.push_back(j % (slices + 1) + 1);
+			meshData.indexVec.push_back(j);
+
+		}
+	}
+
+
+	for (unsigned int i = 1; i < levels - 1; ++i)
+	{
+		for (unsigned int j = 1; j <= slices + 1; ++j)
+		{
+
+			meshData.indexVec.push_back((i - 1) * (slices + 1) + j);
+			meshData.indexVec.push_back((i - 1) * (slices + 1) + j % (slices + 1) + 1);
+			meshData.indexVec.push_back(i * (slices + 1) + j % (slices + 1) + 1);
+
+			meshData.indexVec.push_back(i * (slices + 1) + j % (slices + 1) + 1);
+			meshData.indexVec.push_back(i * (slices + 1) + j);
+			meshData.indexVec.push_back((i - 1) * (slices + 1) + j);
+
+		}
+
+	}
+
+	// 逐渐放入索引
+	if (levels > 1)
+	{
+		for (unsigned int j = 1; j <= slices; ++j)
+		{
+			meshData.indexVec.push_back((levels - 2) * (slices + 1) + j);
+			meshData.indexVec.push_back((levels - 2) * (slices + 1) + j % (slices + 1) + 1);
+			meshData.indexVec.push_back(meshData.posVec.size() - 1);
+		}
+	}
+
+	return meshData;
 }
 
-GeometryFactory::MeshData GeometryFactory::CreateCylinder(float radius, float height, int slices)
+GeometryFactory::MeshData GeometryFactory::CreateCylinder(float radius, float height, unsigned int slices)
 {
-    MeshData meshData;
+	MeshData meshData = CreateCylinderNoCap(radius, height, slices);
+	float h2 = height / 2;
+	float theta = 0.0f;
+	float per_theta = glm::two_pi<float>() / slices;
 
-    return meshData;
+	unsigned int offset = 2 * (slices + 1);
+	// 放入顶端圆心
+	meshData.posVec.push_back(glm::vec3(0.0f, h2, 0.0f));
+	meshData.normalVec.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	// 放入顶端圆上各点
+	for (unsigned int i = 0; i <= slices; ++i)
+	{
+		theta = i * per_theta;
+		meshData.posVec.push_back(glm::vec3(radius * cosf(theta), h2, radius * sinf(theta)));
+		meshData.normalVec.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+	// 逐渐放入索引
+	for (unsigned int i = 1; i <= slices; ++i)
+	{
+		meshData.indexVec.push_back(offset);
+		meshData.indexVec.push_back(offset + i % (slices + 1) + 1);
+		meshData.indexVec.push_back(offset + i);
+	}
+
+
+	// 放入底部圆上各点
+	for (unsigned int i = 0; i <= slices; ++i)
+	{
+		theta = i * per_theta;
+		meshData.posVec.push_back(glm::vec3(radius * cosf(theta), -h2, radius * sinf(theta)));
+		meshData.normalVec.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+	}
+	// 放入底端圆心
+	meshData.posVec.push_back(glm::vec3(0.0f, -h2, 0.0f));
+	meshData.normalVec.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+
+	// 逐渐放入索引
+	offset += (slices + 1) + 1;
+	for (unsigned int i = 1; i <= slices; ++i)
+	{
+		meshData.indexVec.push_back(offset);
+		meshData.indexVec.push_back(offset + i);
+		meshData.indexVec.push_back(offset + i % (slices + 1) + 1);
+	}
+
+	return meshData;
 }
 
-GeometryFactory::MeshData GeometryFactory::CreateCylinderNoCap(float radius, float height, int slices)
+GeometryFactory::MeshData GeometryFactory::CreateCylinderNoCap(float radius, float height, unsigned int slices)
 {
-    MeshData meshData;
+	MeshData meshData;
+	float h2 = height / 2;
+	float theta = 0.0f;
+	float per_theta = glm::two_pi<float>() / slices;
 
-    return meshData;
+	// 放入侧面顶端点
+	for (unsigned int i = 0; i <= slices; ++i)
+	{
+		theta = i * per_theta;
+		meshData.posVec.push_back(glm::vec3(radius * cosf(theta), h2, radius * sinf(theta)));
+		meshData.normalVec.push_back(glm::vec3(cosf(theta), 0.0f, sinf(theta)));
+	}
+	// 放入侧面底端点
+	for (unsigned int i = 0; i <= slices; ++i)
+	{
+		theta = i * per_theta;
+		meshData.posVec.push_back(glm::vec3(radius * cosf(theta), -h2, radius * sinf(theta)));
+		meshData.normalVec.push_back(glm::vec3(cosf(theta), 0.0f, sinf(theta)));
+	}
+
+	// 放入索引
+	for (unsigned int i = 0; i < slices; ++i)
+	{
+		meshData.indexVec.push_back(i);
+		meshData.indexVec.push_back(i + 1);
+		meshData.indexVec.push_back((slices + 1) + i + 1);
+
+		meshData.indexVec.push_back((slices + 1) + i + 1);
+		meshData.indexVec.push_back((slices + 1) + i);
+		meshData.indexVec.push_back(i);
+	}
+
+	return meshData;
 }

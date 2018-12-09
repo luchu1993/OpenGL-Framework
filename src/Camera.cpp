@@ -16,12 +16,6 @@ bool Camera::init()
 	m_position = glm::vec3(0.0f);
 	m_rotation = glm::vec3(0.0f);
 
-	m_cameraInfoUBOIndex = glGetUniformBlockIndex(m_shaderProgram, "CameraInfo");
-	glGetActiveUniformBlockiv(m_shaderProgram, m_cameraInfoUBOIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &m_cameraInfoUBOSize);
-	
-	glGenBuffers(1, &m_cameraInfoUBO);
-	glBindBufferBase(GL_UNIFORM_BUFFER, m_cameraInfoUBOIndex, m_cameraInfoUBO);
-
 	return true;
 }
 
@@ -45,9 +39,9 @@ bool Camera::render()
 	glm::vec4 _lookAt(0.0f, 0.0f, -1.0f, 0.0f);
 
 	glm::mat4 rotate = glm::mat4(1.0f);
-	glm::rotate(rotate, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::rotate(rotate, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::rotate(rotate, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	rotate = glm::rotate(rotate, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	rotate = glm::rotate(rotate, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	rotate = glm::rotate(rotate, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	glm::vec3 up = rotate * _up;
 	glm::vec3 lookAt = rotate * _lookAt;
@@ -55,18 +49,16 @@ bool Camera::render()
 	lookAt += m_position;
 	m_viewMatrix = glm::lookAt(m_position, lookAt, up);
 
-	CameraInfo data;
-	data.cameraPos = m_position;
-
-	glBindBuffer(GL_UNIFORM_BUFFER, m_cameraInfoUBO);
-	glBufferData(GL_UNIFORM_BUFFER, m_cameraInfoUBOSize, &data, GL_STATIC_DRAW);
+	glUseProgram(m_shaderProgram);
+	int eyePosWLoc = glGetUniformLocation(m_shaderProgram, "eyePosW");
+	glUniform3fv(eyePosWLoc, 1, glm::value_ptr(m_position));
 
 	return true;
 }
 
 void Camera::cleanup()
 {
-	glDeleteBuffers(1, &m_cameraInfoUBO);
+
 }
 
 void Camera::resize(int width, int height)
