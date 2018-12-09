@@ -1,4 +1,5 @@
 #include "Application.h"
+#include <sstream>
 
 Application* gApplication = nullptr;
 
@@ -78,10 +79,38 @@ int Application::run()
 
 bool Application::oneFrame()
 {
-    float dt = 0.0f;
-    bool running = false;
+	bool running = false;
+
+	double currentTime;
+	static double lastTime;
+	static bool isFirstFrame = true;
+	static float totalTime = 0.0f;
+	static int frameCount = 0;
+
+	if (isFirstFrame)
+	{
+		lastTime = glfwGetTime();
+		isFirstFrame = false;
+	}
+
+	currentTime = glfwGetTime();
+	float dt = static_cast<float>(currentTime - lastTime);
+	lastTime = currentTime;
 
     running = m_videoDriver->render(dt);
+	totalTime += dt;
+	++frameCount;
+
+	if (totalTime >= 1.0f)
+	{
+		std::stringstream title;
+		title << m_appName << "  fps: " << frameCount <<
+			" frame time: " << totalTime / frameCount * 1000.0f << " ms";
+		glfwSetWindowTitle(m_window, title.str().c_str());
+
+		totalTime = 0.0f;
+		frameCount = 0;
+	}
 
     return running;
 }

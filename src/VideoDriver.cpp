@@ -129,6 +129,10 @@ bool VideoDriver::resize(int width, int height)
 
 bool VideoDriver::renderScene(float dt)
 {
+	static float totalTime = 0.0f;
+	float rotateSpeed = 180.0f;
+	totalTime += dt;
+
 	// setup camera
 	m_camera->setPosition(0.0f, 0.0f, 15.0f);
 	m_camera->render();
@@ -156,7 +160,7 @@ bool VideoDriver::renderScene(float dt)
 	{
 		m_model->resetGeometry();
 		m_model->setPosition(-5.0f, -3.0f, 0.0f);
-		m_model->setRotation(45.0f, 0.0f, 0.0f);
+		m_model->setRotation(rotateSpeed * totalTime, 0.0f, 0.0f);
 
 		m_shader->render
 		(
@@ -171,7 +175,7 @@ bool VideoDriver::renderScene(float dt)
 	{
 		m_model->resetGeometry();
 		m_model->setPosition(0.0f, -3.0f, 0.0f);
-		m_model->setRotation(0.0f, 45.0f, 0.0f);
+		m_model->setRotation(0.0f, rotateSpeed * totalTime, 0.0f);
 
 		m_shader->render
 		(
@@ -186,7 +190,7 @@ bool VideoDriver::renderScene(float dt)
 	{
 		m_model->resetGeometry();
 		m_model->setPosition(5.0f, -3.0f, 0.0f);
-		m_model->setRotation(0.0f, 0.0f, 45.0f);
+		m_model->setRotation(0.0f, 0.0f, rotateSpeed * totalTime);
 
 		m_shader->render
 		(
