@@ -14,7 +14,7 @@ public:
     void cleanup();
     bool render(float dt);
     bool resize(int width, int height);
-    
+	
 protected:
     bool initDeviceContext();
     bool initGui();

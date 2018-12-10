@@ -18,6 +18,9 @@ public:
 	void setPosition(float x, float y, float z);
 	void setRotation(float x, float y, float z);
 
+	glm::vec3 getPosition() const { return m_position; }
+	glm::vec3 getRotation() const { return m_rotation; }
+
 	glm::mat4 getProjMatrix() const { return m_projMatrix; }
 	glm::mat4 getViewMatrix() const { return m_viewMatrix; }
 

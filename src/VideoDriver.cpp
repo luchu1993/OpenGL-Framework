@@ -58,7 +58,7 @@ bool VideoDriver::init()
 	std::cout << "[INFO]: Init Device Context successed." << std::endl;
 
     // compile and bind shaders
-    m_shader.reset(new Shader("../shader/shader.vs", "../shader/shader.ps"));
+    m_shader.reset(new Shader("../shader/shader.vs", "../shader/shader.fs"));
     if (!m_shader->init())
     {
         std::cerr << "[ERROR]: Create Shader Program failed at " << __FILE__ << 
@@ -122,19 +122,41 @@ void VideoDriver::cleanup()
 bool VideoDriver::resize(int width, int height)
 {
     glViewport(0, 0, width, height);
-	if (m_camera)
-		m_camera->resize(width, height);
+	if (m_camera) m_camera->resize(width, height);
 	return true;
 }
 
 bool VideoDriver::renderScene(float dt)
 {
 	static float totalTime = 0.0f;
-	float rotateSpeed = 180.0f;
 	totalTime += dt;
 
+	float rotateSpeed = 180.0f;
+	
+	float cameraSpeed = 5.0f;
+	static float cameraPosX = 0.0f;
+	static float cameraPosY = 0.0f;
+	static float cameraPosZ = 15.0f;
+
+	// keyboard input
+	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPosZ -= cameraSpeed * dt;
+	if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPosZ += cameraSpeed * dt;
+	if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPosX -= cameraSpeed * dt;
+	if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPosX += cameraSpeed * dt;
+	if (glfwGetKey(m_window, GLFW_KEY_Q) == GLFW_PRESS)
+		cameraPosY += cameraSpeed * dt;
+	if (glfwGetKey(m_window, GLFW_KEY_E) == GLFW_PRESS)
+		cameraPosY -= cameraSpeed * dt;
+
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		return false;
+
 	// setup camera
-	m_camera->setPosition(0.0f, 0.0f, 15.0f);
+	m_camera->setPosition(cameraPosX, cameraPosY, cameraPosZ);
 	m_camera->render();
 	
 	// setup model
