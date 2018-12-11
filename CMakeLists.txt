@@ -41,7 +41,7 @@ add_executable(oglApp ${SRC_LIST})
 
 if (WIN32)
 	set(LIBS glfw3dll glew32 opengl32 imgui)
-else (UNIX)
+elseif (UNIX)
 	set(LIBS glfw GL GLEW imgui)
 endif ()
 target_link_libraries(oglApp ${LIBS})
