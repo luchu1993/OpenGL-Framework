@@ -15,7 +15,7 @@ bool CubeModel::init()
 {
 	resetGeometry();
 
-    GeometryFactory::MeshData mesh = GeometryFactory::CreateSphere();
+    GeometryFactory::MeshData mesh = GeometryFactory::CreateBox();
     m_vertextCount = mesh.posVec.size();
     std::vector<VERTEX> vertices(m_vertextCount);
     for (size_t i = 0; i < m_vertextCount; ++i)
