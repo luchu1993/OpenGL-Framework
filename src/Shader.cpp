@@ -77,7 +77,7 @@ bool Shader::init()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-	// 
+	// generate uniform block 
 	glGenBuffers(1, &m_transformUBO);
 	glBindBufferBase(GL_UNIFORM_BUFFER, TransformsUniformBlock::BindingPoint, m_transformUBO);
 
@@ -111,6 +111,7 @@ bool Shader::render
 	block.projection = projection;
 	block.worldInvTranspose = glm::transpose(glm::inverse(world));
 
+	// update transform uniform block
 	glBindBuffer(GL_UNIFORM_BUFFER, m_transformUBO);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(TransformsUniformBlock), &block, GL_STATIC_DRAW);
 

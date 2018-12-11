@@ -78,6 +78,23 @@ bool VideoDriver::init()
 	}
 	std::cout << "[INFO]: Init Camera successed." << std::endl;
 
+	// create light
+	m_directionalLight.reset(new DirectionalLight());
+	if (!m_directionalLight->init())
+	{
+		std::cerr << "[ERROR]: Create Directional Light failed at " << __FILE__ <<
+			": line " << __LINE__ << std::endl;
+		return false;
+	}
+
+	m_pointLight.reset(new PointLight());
+	if (!m_pointLight->init())
+	{
+		std::cerr << "[ERROR]: Create Point Light failed at " << __FILE__ <<
+			": line " << __LINE__ << std::endl;
+		return false;
+	}
+
 	// create cube mesh
 	m_model.reset(new CubeModel());
 	if (!m_model->init())
@@ -158,7 +175,30 @@ bool VideoDriver::renderScene(float dt)
 	// setup camera
 	m_camera->setPosition(cameraPosX, cameraPosY, cameraPosZ);
 	m_camera->render();
+
+	// setup directional light
+	m_directionalLight->setAmbient(0.1f, 0.1f, 0.1f);
+	m_directionalLight->setDiffuse(0.4f, 0.4f, 0.4f);
+	m_directionalLight->setSpecular(0.6f, 0.6f, 0.6f);
+
+	m_directionalLight->setDirection(1.0f * cosf(totalTime), 1.0f, 1.0f * sinf(totalTime));
+	m_directionalLight->render();
+
+	// setup point light
+	m_pointLight->setAmbient(0.05f, 0.05f, 0.05f);
+	m_pointLight->setDiffuse(0.3f, 0.3f, 0.3f);
+	m_pointLight->setSpecular(0.4f, 0.4f, 0.4f);
+	m_pointLight->setRange(50.0f);
+	m_pointLight->setAttenuation(1.0f, 0.09f, 0.032f);
+
+	m_pointLight->setPosition(15.0f * cosf(totalTime), -3.0f, 15.0f * sinf(totalTime));
+	m_pointLight->render();
 	
+	Material material;
+	material.ambient = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.shineness = 64;
 	// setup model
 	// cube0 (original)
 	{
@@ -175,7 +215,7 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getProjMatrix()
 		);
 		// »æÖÆÄ£ĞÍ
-		m_model->render();
+		m_model->render(material);
 	}
 
 	// cube1 (rotate by X axis)
@@ -190,7 +230,8 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		m_model->render();
+		material.shineness = 32.0f;
+		m_model->render(material);
 	}
 
 	// cube2 (rotate by Y axis)
@@ -205,7 +246,8 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		m_model->render();
+		material.shineness = 16.0f;
+		m_model->render(material);
 	}
 
 	// cube3 (rotate by Z axis)
@@ -220,7 +262,8 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		m_model->render();
+		material.shineness = 4.0f;
+		m_model->render(material);
 	}
 
     return true;

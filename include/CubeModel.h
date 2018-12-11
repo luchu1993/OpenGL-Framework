@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "Material.h"
 
 class CubeModel
 {
@@ -14,7 +15,7 @@ class CubeModel
     };
 public:
     bool init();
-    bool render();
+    bool render(Material const& mat);
 	void cleanup();
 
 	void setPosition(float x, float y, float z);
@@ -36,5 +37,7 @@ private:
     unsigned int m_cubeVAO;
     unsigned int m_cubeVBO;
     unsigned int m_cubeIBO;
+
+	unsigned int m_materialUBO;
 };
 #endif

@@ -15,7 +15,7 @@ bool CubeModel::init()
 {
 	resetGeometry();
 
-    GeometryFactory::MeshData mesh = GeometryFactory::CreateBox();
+    GeometryFactory::MeshData mesh = GeometryFactory::CreateSphere();
     m_vertextCount = mesh.posVec.size();
     std::vector<VERTEX> vertices(m_vertextCount);
     for (size_t i = 0; i < m_vertextCount; ++i)
@@ -50,11 +50,19 @@ bool CubeModel::init()
 
     glBindVertexArray(0);
 
+	// generate material UBO
+	glGenBuffers(1, &m_materialUBO);
+	glBindBufferBase(GL_UNIFORM_BUFFER, Material::BindingPoint, m_materialUBO);
+
 	return true;
 }
 
-bool CubeModel::render()
+bool CubeModel::render(Material const& mat)
 {
+	// update material uniform block
+	glBindBuffer(GL_UNIFORM_BUFFER, m_materialUBO);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Material), &mat, GL_STATIC_DRAW);
+
     // Draw call
     glBindVertexArray(m_cubeVAO);
     glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
@@ -100,4 +108,5 @@ void CubeModel::cleanup()
 	glDeleteVertexArrays(1, &m_cubeVAO);
 	glDeleteBuffers(1, &m_cubeVBO);
 	glDeleteBuffers(1, &m_cubeIBO);
+	glDeleteBuffers(1, &m_materialUBO);
 }

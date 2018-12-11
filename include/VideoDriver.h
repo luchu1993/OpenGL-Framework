@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "CubeModel.h"
+#include "Light.h"
 #include <memory>
 
 class VideoDriver
@@ -31,6 +32,8 @@ private:
     int m_screenHeight;
 	std::unique_ptr<Shader> m_shader;
 	std::unique_ptr<Camera> m_camera;
+	std::unique_ptr<DirectionalLight> m_directionalLight;
+	std::unique_ptr<PointLight> m_pointLight;
 	std::unique_ptr<CubeModel> m_model;
 };
 
