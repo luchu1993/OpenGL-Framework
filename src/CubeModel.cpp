@@ -1,4 +1,4 @@
-#include "glad/glad.h"
+#include "GL/glew.h"
 #include "CubeModel.h"
 #include "GeometryFactory.h"
 #include <vector>

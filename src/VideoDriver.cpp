@@ -1,5 +1,8 @@
 #include "VideoDriver.h"
 #include "GLFW/glfw3.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include <iostream>
 #include <functional>
 
@@ -26,9 +29,10 @@ bool VideoDriver::initDeviceContext()
     glfwMakeContextCurrent(m_window);
 	glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	glewExperimental = true;
+    if (glewInit() != GLEW_OK)
     {
-        std::cerr << "[ERROR]: Init glad loader failed at " << __FILE__ << 
+        std::cerr << "[ERROR]: Init glew loader failed at " << __FILE__ << 
             ": line " << __LINE__ << std::endl;
         return false;
     }
@@ -42,8 +46,16 @@ bool VideoDriver::initDeviceContext()
     return true;
 }
 
-bool initGui()
+bool VideoDriver::initGui()
 {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	ImGui_ImplOpenGL3_Init("#version 450 core");
+
+	ImGui::StyleColorsDark();
+
     return true;
 }
 
@@ -104,6 +116,13 @@ bool VideoDriver::init()
 		return false;
 	}
 	std::cout << "[INFO]: Init CudeModel successed." << std::endl;
+
+	if (!initGui())
+	{
+		std::cerr << "[ERROR]: Init Gui failed at " << __FILE__ << ": line " << __LINE__ << std::endl;
+		return false;
+	}
+	std::cout << "[INFO]: Init Gui successed." << std::endl;
 
     return true;
 }
@@ -177,20 +196,10 @@ bool VideoDriver::renderScene(float dt)
 	m_camera->render();
 
 	// setup directional light
-	m_directionalLight->setAmbient(0.1f, 0.1f, 0.1f);
-	m_directionalLight->setDiffuse(0.4f, 0.4f, 0.4f);
-	m_directionalLight->setSpecular(0.6f, 0.6f, 0.6f);
-
 	m_directionalLight->setDirection(1.0f * cosf(totalTime), 1.0f, 1.0f * sinf(totalTime));
 	m_directionalLight->render();
 
 	// setup point light
-	m_pointLight->setAmbient(0.05f, 0.05f, 0.05f);
-	m_pointLight->setDiffuse(0.3f, 0.3f, 0.3f);
-	m_pointLight->setSpecular(0.4f, 0.4f, 0.4f);
-	m_pointLight->setRange(50.0f);
-	m_pointLight->setAttenuation(1.0f, 0.09f, 0.032f);
-
 	m_pointLight->setPosition(15.0f * cosf(totalTime), -3.0f, 15.0f * sinf(totalTime));
 	m_pointLight->render();
 	
@@ -271,5 +280,50 @@ bool VideoDriver::renderScene(float dt)
 
 bool VideoDriver::renderGui(float dt)
 {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	// Directional Light 
+	static float dirLightAmbient[3] = { 0.1f, 0.1f, 0.1f };
+	static float dirLightDiffuse[3] = { 0.4f, 0.4f, 0.4f };
+	static float dirLightSpecular[3] = { 0.6f, 0.6f, 0.6f };
+
+	ImGui::Begin("Directional Light");
+	ImGui::Text("Directional Light");
+	ImGui::DragFloat3("Ambient", dirLightAmbient, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Diffuse", dirLightDiffuse, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Specular", dirLightSpecular, 0.01f, 0.0f, 1.0f);
+	m_directionalLight->setAmbient(dirLightAmbient[0], dirLightAmbient[1], dirLightAmbient[2]);
+	m_directionalLight->setDiffuse(dirLightDiffuse[0], dirLightDiffuse[1], dirLightDiffuse[2]);
+	m_directionalLight->setSpecular(dirLightSpecular[0], dirLightSpecular[1], dirLightSpecular[2]);
+	ImGui::End();
+
+	// Point Light
+	static float pointLightAmbient[3] = { 0.05f, 0.05f, 0.05f };
+	static float pointLightDiffuse[3] = { 0.3f, 0.3f, 0.3f };
+	static float pointLightSpecular[3] = { 0.4f, 0.4f, 0.4f };
+	static float range = 50.0f;
+	static float attenuation[3] = { 1.0f, 0.09f, 0.032f };
+
+	ImGui::Begin("Point Light");
+	ImGui::Text("Point Light");
+	ImGui::DragFloat3("Ambient", pointLightAmbient, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Diffuse", pointLightDiffuse, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Specular", pointLightSpecular, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Attenuation", attenuation, 0.01f, -5.0f, 5.0f);
+	ImGui::DragFloat("Range", &range, 1.0f, 0.0f, 200.0f);
+
+	m_pointLight->setAmbient(pointLightAmbient[0], pointLightAmbient[1], pointLightAmbient[2]);
+	m_pointLight->setDiffuse(pointLightDiffuse[0], pointLightDiffuse[1], pointLightDiffuse[2]);
+	m_pointLight->setSpecular(pointLightSpecular[0], pointLightSpecular[1], pointLightSpecular[2]);
+	m_pointLight->setAttenuation(attenuation[0], attenuation[1], attenuation[2]);
+	m_pointLight->setRange(range);
+	ImGui::End();
+
+	// Assemble together draw data
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     return true;
 }

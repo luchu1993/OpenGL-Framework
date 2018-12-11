@@ -1,4 +1,4 @@
-#include "glad/glad.h"
+#include "GL/glew.h"
 #include "Light.h"
 
 bool DirectionalLight::init()

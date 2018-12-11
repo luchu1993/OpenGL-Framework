@@ -1,4 +1,4 @@
-#include "glad/glad.h"
+#include "GL/glew.h"
 #include "Camera.h"
 
 Camera::Camera(unsigned int shaderProgram, float fov, float aspect, float scn_near, float scn_far)

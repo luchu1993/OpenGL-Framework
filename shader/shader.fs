@@ -66,14 +66,16 @@ void main()
 
     // point light
     ambient += pointLight.ambient * mat.ambient;
-    
-    float D = length(eyePosW - posW);
+    diffuse += vec4(0.0f);
+    specular += vec4(0.0f);
+
+    float D = length(pointLight.position - posW);
     if (D <= pointLight.range)
     {
         L = normalize(pointLight.position - posW);
         R = reflect(-L, N);
         float att = pointLight.attenuation.x + pointLight.attenuation.y * D + pointLight.attenuation.z * D * D;
-        diffuse += (max(dot(N, L), 0.0f) * pointLight.ambient * mat.ambient) / att;
+        diffuse += (max(dot(N, L), 0.0f) * pointLight.diffuse * mat.diffuse) / att;
         specular += pow(max(dot(R, V) ,0.0f), mat.shineness) * pointLight.specular * mat.specular / att;
     }
 

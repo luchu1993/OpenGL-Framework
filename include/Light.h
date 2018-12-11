@@ -43,7 +43,6 @@ class PointLight
 		glm::vec3 position;
 		float pad0;
 		glm::vec3 attenuation;
-		float pad1;
 		float range;
 
 		static const unsigned int BindingPoint = 2;
