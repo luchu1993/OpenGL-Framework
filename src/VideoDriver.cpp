@@ -4,16 +4,34 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <iostream>
-#include <functional>
 
 namespace
 {
 	VideoDriver* activeDriver = nullptr;
+	static bool isWireFrame = false;
 }
 
 static void onFramebufferResize(GLFWwindow* window, int width, int height)
 {
     activeDriver->resize(width, height);
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_R && action == GLFW_PRESS)
+	{
+		if (isWireFrame)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			isWireFrame = false;
+		}
+		else
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			isWireFrame = true;
+		}
+	}
+		
 }
 
 VideoDriver::VideoDriver(GLFWwindow* window, int width, int height)
@@ -28,6 +46,7 @@ bool VideoDriver::initDeviceContext()
 {
     glfwMakeContextCurrent(m_window);
 	glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
+	glfwSetKeyCallback(m_window, key_callback);
 
 	glewExperimental = true;
     if (glewInit() != GLEW_OK)
@@ -74,7 +93,7 @@ bool VideoDriver::init()
 	std::cout << "[INFO]: Init Device Context successed." << std::endl;
 
     // compile and bind shaders
-    m_shader.reset(new Shader("../shader/shader.vs", "../shader/shader.fs"));
+    m_shader.reset(new Shader("../data/shader/shader.vs", "../data/shader/shader.fs"));
     if (!m_shader->init())
     {
         std::cerr << "[ERROR]: Create Shader Program failed at " << __FILE__ << 
@@ -82,6 +101,16 @@ bool VideoDriver::init()
         return false;
     }
     std::cout << "[INFO]: Init Shader Program successed."  << std::endl;
+
+	// load texture
+	m_texture.reset(new Texture(m_shader->getProgram(), "../data/texture/container.png"));
+	if (!m_texture->init())
+	{
+		std::cerr << "[ERROR]: Create Texture failed at " << __FILE__ <<
+			": line " << __LINE__ << std::endl;
+		return false;
+	}
+	std::cout << "[INFO]: Load Texture \"container.png\" successed." << std::endl;
 
 	// create camera
 	float aspect = static_cast<float>(m_screenWidth) / static_cast<float>(m_screenHeight);
@@ -155,6 +184,7 @@ void VideoDriver::end()
 void VideoDriver::cleanup()
 {
 	m_shader->cleanup();
+	m_texture->cleanup();
 	m_camera->cleanup();
 	m_model->cleanup();
 }
@@ -178,6 +208,9 @@ bool VideoDriver::renderScene(float dt)
 	static float cameraPosY = 0.0f;
 	static float cameraPosZ = 15.0f;
 
+	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		return false;
+
 	// keyboard input
 	if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
 		cameraPosZ -= cameraSpeed * dt;
@@ -192,26 +225,25 @@ bool VideoDriver::renderScene(float dt)
 	if (glfwGetKey(m_window, GLFW_KEY_E) == GLFW_PRESS)
 		cameraPosY -= cameraSpeed * dt;
 
-	if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		return false;
+
 
 	// setup camera
 	m_camera->setPosition(cameraPosX, cameraPosY, cameraPosZ);
 	m_camera->render();
 
-	// setup directional light
-	m_directionalLight->setDirection(1.0f * cosf(totalTime), 1.0f, 1.0f * sinf(totalTime));
-	m_directionalLight->render();
+	{
+		// setup directional light
+		m_directionalLight->setDirection(1.0f * cosf(totalTime), 1.0f, 1.0f * sinf(totalTime));
+		m_directionalLight->render();
 
-	// setup point light
-	m_pointLight->setPosition(15.0f * cosf(totalTime), -3.0f, 15.0f * sinf(totalTime));
-	m_pointLight->render();
-	
-	Material material;
-	material.ambient = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	material.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	material.specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	material.shineness = 64;
+		// setup point light
+		m_pointLight->setPosition(15.0f * cosf(totalTime), -3.0f, 15.0f * sinf(totalTime));
+		m_pointLight->render();
+	}
+
+	// active texture
+	m_texture->render();
+
 	// setup model
 	// cube0 (original)
 	{
@@ -228,7 +260,7 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getProjMatrix()
 		);
 		// »æÖÆÄ£ÐÍ
-		m_model->render(material);
+		m_model->render();
 	}
 
 	// cube1 (rotate by X axis)
@@ -243,8 +275,7 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		material.shineness = 32.0f;
-		m_model->render(material);
+		m_model->render();
 	}
 
 	// cube2 (rotate by Y axis)
@@ -259,8 +290,7 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		material.shineness = 16.0f;
-		m_model->render(material);
+		m_model->render();
 	}
 
 	// cube3 (rotate by Z axis)
@@ -275,8 +305,7 @@ bool VideoDriver::renderScene(float dt)
 			m_camera->getViewMatrix(),
 			m_camera->getProjMatrix()
 		);
-		material.shineness = 4.0f;
-		m_model->render(material);
+		m_model->render();
 	}
 
     return true;

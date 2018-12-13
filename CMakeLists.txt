@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(OpenGL_Framework)
+project(OpenGL_Engine)
 
 set(INCLUDES include deps/imgui/include)
 
@@ -8,6 +8,7 @@ set(INCLUDES include deps/imgui/include)
 if (WIN32)
 	include_directories (
 		${INCLUDES}
+		deps/common/include
 		deps/glew/include
 		deps/glfw/include
 		deps/glm/include
@@ -20,7 +21,7 @@ if (WIN32)
 elseif (UNIX)
 	include_directories (
 		${INCLUDES}
-		
+		deps/common
 	)
 endif()
 
@@ -34,15 +35,16 @@ else()
 endif()
 
 add_subdirectory(deps/imgui)
+add_subdirectory(deps/common)
 
 aux_source_directory(src SRC_LIST)
-add_executable(oglApp ${SRC_LIST})
+add_executable(Engine ${SRC_LIST})
 
 
 if (WIN32)
-	set(LIBS glfw3dll glew32 opengl32 imgui)
+	set(LIBS common glfw3dll glew32 opengl32 imgui)
 elseif (UNIX)
-	set(LIBS glfw GL GLEW imgui)
+	set(LIBS common glfw GL GLEW imgui)
 endif ()
-target_link_libraries(oglApp ${LIBS})
+target_link_libraries(Engine ${LIBS})
 	

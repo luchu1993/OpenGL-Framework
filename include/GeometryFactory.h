@@ -8,15 +8,16 @@ class GeometryFactory
 public:
     struct MeshData
     {
-        std::vector<glm::vec3> posVec;
-        std::vector<glm::vec3> normalVec;
-        std::vector<unsigned int> indexVec;
+        std::vector<glm::vec3> position;
+        std::vector<glm::vec3> normal;
+		std::vector<glm::vec2> texCoord;
+        std::vector<unsigned int> index;
     };
 
     static MeshData CreateBox(float width = 2.0f, float height = 2.0f, float depth = 2.0f);
-    static MeshData CreateSphere(float radius = 1.0f, unsigned int levels = 50, unsigned int slices = 50);
-    static MeshData CreateCylinder(float radius = 1.0f, float height = 2.0f, unsigned int slices = 50);
-    static MeshData CreateCylinderNoCap(float radius = 1.0f, float height = 2.0f, unsigned int slices = 50);
+    static MeshData CreateSphere(float radius = 1.0f, unsigned int levels = 20, unsigned int slices = 20);
+    static MeshData CreateCylinder(float radius = 1.0f, float height = 2.0f, unsigned int slices = 20);
+    static MeshData CreateCylinderNoCap(float radius = 1.0f, float height = 2.0f, unsigned int slices = 20);
     
 private:
     GeometryFactory() = delete;

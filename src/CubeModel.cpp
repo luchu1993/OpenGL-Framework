@@ -15,20 +15,21 @@ bool CubeModel::init()
 {
 	resetGeometry();
 
-    GeometryFactory::MeshData mesh = GeometryFactory::CreateBox();
-    m_vertextCount = mesh.posVec.size();
+    GeometryFactory::MeshData mesh = GeometryFactory::CreateCylinder();
+    m_vertextCount = mesh.position.size();
     std::vector<VERTEX> vertices(m_vertextCount);
     for (size_t i = 0; i < m_vertextCount; ++i)
     {
-		vertices[i].pos = mesh.posVec[i];
-        vertices[i].normal = mesh.normalVec[i];
+		vertices[i].position = mesh.position[i];
+        vertices[i].normal = mesh.normal[i];
+		vertices[i].texCoord = mesh.texCoord[i];
     }
 
-    m_indexCount = mesh.indexVec.size();
+    m_indexCount = mesh.index.size();
     std::vector<unsigned int> indices(m_indexCount);
     for (size_t i = 0; i < m_indexCount; ++i)
     {
-        indices[i] = mesh.indexVec[i];
+        indices[i] = mesh.index[i];
     }
 
     glGenVertexArrays(1, &m_cubeVAO);
@@ -43,26 +44,20 @@ bool CubeModel::init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexCount * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
 	// Set vertex layout
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float))); 
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float))); 
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
-
-	// generate material UBO
-	glGenBuffers(1, &m_materialUBO);
-	glBindBufferBase(GL_UNIFORM_BUFFER, Material::BindingPoint, m_materialUBO);
 
 	return true;
 }
 
-bool CubeModel::render(Material const& mat)
+bool CubeModel::render()
 {
-	// update material uniform block
-	glBindBuffer(GL_UNIFORM_BUFFER, m_materialUBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(Material), &mat, GL_STATIC_DRAW);
-
     // Draw call
     glBindVertexArray(m_cubeVAO);
     glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
